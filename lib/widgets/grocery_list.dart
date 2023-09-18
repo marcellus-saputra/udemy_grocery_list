@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_items.dart';
+import 'package:udemy_grocery_list/models/grocery_item.dart';
 import 'new_item.dart';
 
 class GroceryList extends StatefulWidget {
@@ -10,9 +10,38 @@ class GroceryList extends StatefulWidget {
 }
 
 class _GroceryListState extends State<GroceryList> {
-  void _addItem() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (ctx) => const NewItem()));
+  final List<GroceryItem> _groceryItems = [];
+
+  void _addItem() async {
+    final newItem = await Navigator.of(context).push<GroceryItem>(
+      MaterialPageRoute(
+        builder: (ctx) => const NewItem(),
+      ),
+    );
+
+    if (newItem == null) {
+      return;
+    }
+
+    setState(() {
+      _groceryItems.add(newItem);
+    });
+  }
+
+  Widget _getGroceriesList() {
+    return ListView.builder(
+      itemCount: _groceryItems.length,
+      itemBuilder: (ctx, index) {
+        return ListTile(
+          leading: Icon(
+            Icons.square,
+            color: _groceryItems[index].category!.color,
+          ),
+          title: Text(_groceryItems[index].name),
+          trailing: Text(_groceryItems[index].quantity.toString()),
+        );
+      },
+    );
   }
 
   @override
@@ -27,19 +56,34 @@ class _GroceryListState extends State<GroceryList> {
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: groceryItems.length,
-        itemBuilder: (ctx, index) {
-          return ListTile(
-            leading: Icon(
-              Icons.square,
-              color: groceryItems[index].category!.color,
-            ),
-            title: Text(groceryItems[index].name),
-            trailing: Text(groceryItems[index].quantity.toString()),
-          );
-        },
-      ),
+      body: _groceryItems.isEmpty
+          ? Container(
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'No Groceries',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.withOpacity(0.5),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Text(
+                    'Add groceries using the + button!',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.withOpacity(0.5),
+                    ),
+                  )
+                ],
+              ),
+            )
+          : _getGroceriesList(),
     );
   }
 }
