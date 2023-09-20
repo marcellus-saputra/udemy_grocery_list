@@ -14,6 +14,7 @@ class GroceryList extends StatefulWidget {
 
 class _GroceryListState extends State<GroceryList> {
   List<GroceryItem> _groceryItems = [];
+  var _isLoading = true;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _GroceryListState extends State<GroceryList> {
     }
     setState(() {
       _groceryItems = _loadedItems;
+      _isLoading = false;
     });
   }
 
@@ -55,7 +57,13 @@ class _GroceryListState extends State<GroceryList> {
       ),
     );
 
-    _loadItems();
+    if (newItem == null) {
+      return;
+    }
+
+    setState(() {
+      _groceryItems.add(newItem);
+    });
   }
 
   void _removeItem(GroceryItem item) {
@@ -98,34 +106,38 @@ class _GroceryListState extends State<GroceryList> {
           )
         ],
       ),
-      body: _groceryItems.isEmpty
-          ? Container(
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'No Groceries',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.withOpacity(0.5),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  Text(
-                    'Add groceries using the + button!',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.withOpacity(0.5),
-                    ),
-                  )
-                ],
-              ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
             )
-          : _getGroceriesList(),
+          : _groceryItems.isEmpty
+              ? Container(
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'No Groceries',
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        'Add groceries using the + button!',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.withOpacity(0.5),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              : _getGroceriesList(),
     );
   }
 }
