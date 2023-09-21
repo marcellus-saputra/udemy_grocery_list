@@ -15,6 +15,7 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList> {
   List<GroceryItem> _groceryItems = [];
   var _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -28,6 +29,11 @@ class _GroceryListState extends State<GroceryList> {
       'shopping-list.json',
     );
     final response = await http.get(url);
+    if (response.statusCode >= 400) {
+      setState(() {
+        _error = 'Failed to fetch data. Please try again later.';
+      });
+    }
     final Map<String, dynamic> listData = json.decode(response.body);
     final List<GroceryItem> _loadedItems = [];
     for (final item in listData.entries) {
@@ -96,6 +102,49 @@ class _GroceryListState extends State<GroceryList> {
 
   @override
   Widget build(BuildContext context) {
+    Widget content = Container(
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'No Groceries',
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Text(
+            'Add groceries using the + button!',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.withOpacity(0.5),
+            ),
+          )
+        ],
+      ),
+    );
+
+    if (_isLoading) {
+      content = const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_groceryItems.isNotEmpty) {
+      content = _getGroceriesList();
+    }
+
+    if (_error != null) {
+      content = Center(
+        child: Text(_error!),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Groceries'),
@@ -106,38 +155,7 @@ class _GroceryListState extends State<GroceryList> {
           )
         ],
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : _groceryItems.isEmpty
-              ? Container(
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'No Groceries',
-                        style: TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.withOpacity(0.5),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      Text(
-                        'Add groceries using the + button!',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.withOpacity(0.5),
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              : _getGroceriesList(),
+      body: content,
     );
   }
 }
